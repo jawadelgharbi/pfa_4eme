@@ -1,0 +1,232 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <title>Modifier</title>
+    {% include 'parts/files.html' %}
+</head>
+
+<body>
+<div id="app">
+    {% include 'parts/sidebar.html' %}
+    <div id="main">
+        <header class="mb-3">
+            <a href="#" class="burger-btn d-block d-xl-none">
+                <i class="bi bi-justify fs-3"></i>
+            </a>
+        </header>
+
+        <div class="page-heading">
+            <h3>Modifier Mark</h3>
+        </div>
+        <div class="page-content">
+                <div class="row">
+                    <div class="col-12 grid-margin">
+                        <div class="card">
+                            <div class="card-body">
+                                <h4 class="card-title">Edit mark</h4>
+                                <form class="form-sample" method="POST" action="/admins/marks/edit/{{ form.id.value }}"
+                                      enctype="multipart/form-data">
+                                    {% csrf_token %}
+                                    {{ form.utilisateur }}
+                                    <p class="card-description"> General information </p>
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <div class="form-group row">
+                                                <label class="col-sm-3 col-form-label">{{ form.nom.label }}</label>
+                                                <div class="col-sm-9">
+                                                    {{ form.nom }}
+                                                    <div class="text-danger text-small">
+                                                        {{ form.nom.errors }}
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div class="form-group row">
+                                                <label class="col-sm-3 col-form-label">{{ form.gravit.label }}</label>
+                                                <div class="col-sm-9">
+                                                    {{ form.gravit }}
+                                                    <div class="text-danger text-small">
+                                                        {{ form.gravit.errors }}
+                                                    </div>
+
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <div class="form-group row">
+                                                <label class="col-sm-3 col-form-label"
+                                                       for="description">{{ form.desctiption.label }}</label>
+                                                <div class="col-sm-9">
+                                                    {{ form.desctiption }}
+                                                    <div class="text-danger text-small">
+                                                        {{ form.desctiption.errors }}
+                                                    </div>
+
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <div class="col-md-6">
+                                            <div class="form-group row">
+                                                <label class="col-sm-3 col-form-label">{{ form.image.label }}</label>
+                                                <div class="col-sm-9">
+                                                    {{ form.image }}
+                                                    <div class="text-danger text-small">
+                                                        {{ form.image.errors }}
+                                                    </div>
+
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col-12 mt-3 mb-5">
+                                            <button class="btn btn-success mr-5">Save</button>
+                                            <button class="btn btn-danger" type="button" id="deleteallpoints">Reset
+                                            </button>
+                                        </div>
+                                        <div class="col-md-12">
+
+                                            <canvas id="markimagecanvas" style="width: 70vw">
+
+                                            </canvas>
+                                            <img src="{{ form.image.value.url }}" id="markimage"
+                                                 style="display: none;width: 100%;height: 100%">
+
+                                        </div>
+
+
+                                    </div>
+                                    {#                                    <p class="card-description"> Marks </p>#}
+                                    {#                                    <div class="row">#}
+                                    {#                                        <div class="col-md-12">#}
+                                    {#                                            <img src="" style="width: 100%" height="100%">#}
+                                    {#                                        </div>#}
+                                    {#                                    </div>#}
+
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+        </div>
+
+{#        {% include 'parts/footer.html' %}#}
+    </div>
+</div>
+{% include 'parts/files2.html' %}
+
+<div class="modal fade" id="deletemodal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <form method="post" action="/admins/marks/points/delete/{{ form.id.value }}" class="modal-content">
+            {% csrf_token %}
+            <div class="modal-header justify-content-end border-0">
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="d-flex align-items-center ">
+                    <i class="mdi mdi-alert-circle mr-4" style="font-size: 60px;color: orange"></i>
+
+                    <p>Do your really want delete all points?</p>
+                </div>
+
+            </div>
+            <div class="modal-footer border-0">
+                <button class="btn btn-danger">Delete</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script type="text/paperscript" canvas="markimagecanvas">
+    // Load from Server:
+    var newcounter = 0
+    var raster = new Raster('markimage');
+
+    raster.position = view.center;
+    raster.scale(0.3);
+
+
+    var path = new Path();
+    path.selected = true;
+    {#path.strokeColor = 'black';#}
+    path.strokeColor = '#474343';
+    path.strokeWidth = 5;
+    path.strokeCap = 'round';
+    path.dashArray = [10, 12];
+    path.fillColor = 'rgb(101,196,247,0.4)';
+    {#var point = new Point(400, 300);#}
+    {#path.add(point);#}
+
+    {% for point in points %}
+        console.log({{ point.numero }})
+        path.insert({{ point.numero }}, new Point({{ point.x }}, {{ point.y }}));
+
+        {% if points.last %}
+            newcounter ={{ point.numero }}
+        {% endif %}
+    {% endfor %}
+    {#path.removeSegments();#}
+
+    var text = new PointText();
+    var x = {% if  form.descx.value == None  %} 200 {% else %} {{ form.descx.value }} {% endif %};
+    var y = {% if form.descy.value == None %}  50 {% else %} {{ form.descy.value }} {% endif %};
+    var step = 10;
+    text.justification = 'right';
+    text.fillColor = 'white';
+    text.fontSize = 20;
+    text.content = '{{ form.desctiption.value }}';
+    text.position = new Point(x, y);
+    text.shadowColor = 'black';
+    text.shadowBlur = 7;
+    {#text.shadowOffset= new Point(10, 10);#}
+
+
+
+    function onMouseDown(event) {
+
+        // Create a path:
+        // Add the mouse down position:
+        $.ajax({
+            url: '/admins/marks/points/add/{{ form.id.value }}',
+            method: 'post',
+            data: {
+                {#'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,#}
+                'csrfmiddlewaretoken': '{{ csrf_token }}',
+                'count': newcounter++,
+                'x': event.point.x,
+                'y': event.point.y
+            },
+            success: function (e) {
+                path.insert(newcounter, event.point);
+                console.log(newcounter)
+
+            },
+            error: function (e) {
+                console.log(e.responseText)
+            }
+
+        })
+
+
+    }
+
+
+</script>
+<script>
+    $(document).ready(function () {
+        $('#deleteallpoints').click(function () {
+            $('#deletemodal').modal('show')
+
+        })
+    })
+
+
+</script>
+
+</body>
+
+</html>
